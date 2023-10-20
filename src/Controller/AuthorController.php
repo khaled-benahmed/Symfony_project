@@ -3,11 +3,15 @@
 namespace App\Controller;
 
 use App\Entity\Author;
+use App\Form\AuthorType;
+
 use App\Repository\AuthorRepository;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\HttpFoundation\Request;
+
 
 class AuthorController extends AbstractController
 {
@@ -26,18 +30,6 @@ class AuthorController extends AbstractController
             ,array('nameAuthor'=>$username));
     }
 
-    #[Route('/list', name: 'list_author')]
-    public function listAuthors()
-    {
-        $authors = array(
-            array('id' => 1, 'username' => ' Victor Hugo','email'=> 'victor.hugo@gmail.com', 'nb_books'=> 100),
-            array ('id' => 2, 'username' => 'William Shakespeare','email'=>
-                'william.shakespeare@gmail.com','nb_books' => 200),
-            array('id' => 3, 'username' => ' Taha Hussein','email'=> 'taha.hussein@gmail.com','nb_books' => 300),
-        );
-        return $this->render("author/list.html.twig",
-            array('tabAuthors'=>$authors));
-    }
 
     #[Route('/listAuthor', name: 'authors')]
     public function list(AuthorRepository $repository)
@@ -49,17 +41,27 @@ class AuthorController extends AbstractController
     }
 
     #[Route('/addAuthor', name: 'addAuthor')]
-    public function addAuthor(ManagerRegistry $managerRegistry)
+    public function addAuthor(Request $request,ManagerRegistry $managerRegistry)
     {
        $author= new Author();
-       $author->setEmail("sami@gmail.com");
-       $author->setUsername("sami");
+       $form= $this->createForm(AuthorType::class,$author);
+       $form->handleRequest($request);
+       if($form->isSubmitted()){
+        $em= $managerRegistry->getManager();
+        $em->persist($author);
+       $em->flush();
+       return $this->redirectToRoute("list_authors");
+       }
+      /* $author->setEmail("ahmed@gmail.com");
+       $author->setUsername("ahmed");
        #$em= $this->getDoctrine()->getManager();
         $em= $managerRegistry->getManager();
         $em->persist($author);
         $em->flush();
-        return $this->redirectToRoute("authors");
-
+       return $this->redirectToRoute("list_authors");*/
+    
+        return $this->renderForm("author/add.html.twig"
+            ,array('formulaireAuthor'=>$form));
     }
 
     #[Route('/update/{id}', name: 'updateAuthor')]
