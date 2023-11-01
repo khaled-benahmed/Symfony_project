@@ -21,6 +21,22 @@ class AuthorRepository extends ServiceEntityRepository
         parent::__construct($registry, Author::class);
     }
 
+    public function triemail()  {
+        return $this->createQueryBuilder('a')
+        ->orderBy('a.email',"Asc")
+        ->getQuery()
+        ->getResult();
+    }
+    public function showbyrefauthor($ref){
+        return $this->createQueryBuilder('a')
+        ->join('a.books','b')
+        ->addSelect('b')
+        ->where('b.author=:ref')
+        ->setParameter('ref',$ref)
+        ->getQuery()
+        ->getResult();
+    }
+
 //    /**
 //     * @return Author[] Returns an array of Author objects
 //     */
